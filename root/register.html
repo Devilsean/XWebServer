@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign up - 注册</title>
+    <style>
+        /* 基础样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 页面整体居中 */
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        /* 注册容器 */
+        .register-container {
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* 注册标题 */
+        .register-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+        }
+
+        /* 表单样式 */
+        .register-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            padding: 0 1rem;
+            margin-bottom: 1rem;
+            /* 给返回按钮留间距 */
+        }
+
+        /* 输入框样式 */
+        .register-input {
+            padding: 0.8rem 1rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            outline: none;
+            transition: border 0.2s ease;
+        }
+
+        .register-input:focus {
+            border-color: #999;
+        }
+
+        /* 按钮通用样式 */
+        .btn {
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            font-weight: 500;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #f8f8f8;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s ease;
+        }
+
+        .btn:hover {
+            background: #f0f0f0;
+        }
+
+        /* 返回按钮容器 */
+        .back-btn-container {
+            padding: 0 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="register-container">
+        <!-- 注册标题 -->
+        <div class="register-title">注册</div>
+
+        <!-- 注册表单 -->
+        <form action="3CGISQL.cgi" method="post" class="register-form">
+            <input type="text" name="user" placeholder="用户名" required="required" class="register-input">
+            <input type="password" name="password" placeholder="用户密码" required="required" class="register-input">
+            <button type="submit" class="btn">注册</button>
+        </form>
+
+        <!-- 返回按钮 -->
+        <div class="back-btn-container">
+            <button type="button" class="btn" onclick="window.history.back()">返回</button>
+        </div>
+    </div>
+</body>
+
+</html>

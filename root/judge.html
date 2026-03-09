@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebServer - 用户登录入口</title>
+    <style>
+        /* 基础重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 让body占满整个屏幕，并设置居中容器 */
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            min-height: 100vh;
+            /* 高度占满视口 */
+            display: flex;
+            /* flex布局实现垂直居中 */
+            justify-content: center;
+            /* 水平居中 */
+            align-items: center;
+            /* 垂直居中 */
+            padding: 1rem;
+            /* 防止内容贴边 */
+        }
+
+        /* 内容容器 */
+        .container {
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            /* 内部文字水平居中 */
+        }
+
+        /* 标题样式 */
+        .title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 3rem;
+        }
+
+        /* 按钮组 */
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            /* 按钮间距 */
+        }
+
+        /* 按钮样式（无颜色） */
+        .action-btn {
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            font-weight: 500;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #f8f8f8;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: #f0f0f0;
+            /* 悬停仅灰度变化 */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- 标题 -->
+        <div class="title">欢迎访问</div>
+
+        <!-- 按钮组 -->
+        <div class="btn-group">
+            <form action="0" method="post">
+                <button type="submit" class="action-btn">新用户</button>
+            </form>
+
+            <form action="1" method="post">
+                <button type="submit" class="action-btn">已有账号</button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

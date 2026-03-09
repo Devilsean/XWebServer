@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebServer - 功能首页</title>
+    <style>
+        /* 基础样式重置，与整套页面保持一致 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 页面整体垂直+水平居中 */
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        /* 功能容器，与登录/注册页尺寸统一 */
+        .function-container {
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* 首页标题样式，与登录/注册页标题风格一致 */
+        .main-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 3rem;
+        }
+
+        /* 功能按钮组，替换br标签用gap控制间距 */
+        .function-btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 0 1rem;
+        }
+
+        /* 功能按钮样式，与整套页面按钮风格统一（无颜色） */
+        .function-btn {
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            font-weight: 500;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #f8f8f8;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s ease;
+        }
+
+        .function-btn:hover {
+            background: #f0f0f0;
+            /* 悬停仅灰度变化，无彩色 */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="function-container">
+        <!-- 首页标题 -->
+        <div class="main-title">WebServer 功能中心</div>
+
+        <!-- 功能按钮组 -->
+        <div class="function-btn-group">
+            <form action="5" method="post">
+                <button type="submit" class="function-btn">图片展示</button>
+            </form>
+            <form action="6" method="post">
+                <button type="submit" class="function-btn">视频展示</button>
+            </form>
+            <form action="7" method="post">
+                <button type="submit" class="function-btn">文件下载</button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

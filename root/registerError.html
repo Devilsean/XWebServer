@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign up - 注册</title>
+    <style>
+        /* 基础样式重置，与整套页面保持一致 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 页面整体垂直+水平居中 */
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        /* 注册容器，与整套页面尺寸统一 */
+        .register-container {
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* 注册标题样式，与其他页面统一 */
+        .register-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+        }
+
+        /* 表单样式，间距统一 */
+        .register-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            padding: 0 1rem;
+            margin-bottom: 1rem;
+        }
+
+        /* 输入框样式，无颜色仅灰度 */
+        .register-input {
+            padding: 0.8rem 1rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            outline: none;
+            transition: border 0.2s ease;
+        }
+
+        .register-input:focus {
+            border-color: #999;
+        }
+
+        /* 通用按钮样式，与整套页面统一 */
+        .btn {
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            font-weight: 500;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #f8f8f8;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s ease;
+        }
+
+        .btn:hover {
+            background: #f0f0f0;
+        }
+
+        /* 错误提示样式：灰度系，突出提示但无彩色 */
+        .error-tip {
+            font-size: 0.9rem;
+            color: #666;
+            /* 深灰色，无红色等彩色 */
+            margin-top: 1rem;
+            padding: 0 1rem;
+        }
+
+        /* 返回按钮容器 */
+        .back-btn-container {
+            padding: 0 1rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="register-container">
+        <!-- 注册标题 -->
+        <div class="register-title">注册</div>
+
+        <!-- 注册表单 -->
+        <form action="3CGISQL.cgi" method="post" class="register-form">
+            <input type="text" name="user" placeholder="用户名" required="required" class="register-input">
+            <input type="password" name="password" placeholder="用户密码" required="required" class="register-input">
+            <button type="submit" class="btn">注册</button>
+        </form>
+
+        <!-- 错误提示信息 -->
+        <div class="error-tip">提示：该用户名被注册.</div>
+
+        <!-- 返回按钮 -->
+        <div class="back-btn-container">
+            <button type="button" class="btn" onclick="window.history.back()">返回</button>
+        </div>
+    </div>
+</body>
+
+</html>

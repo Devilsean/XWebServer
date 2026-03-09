@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebServer - 视频展示</title>
+    <style>
+        /* 基础样式重置，与整套页面保持一致 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 页面整体居中布局，和图片页一致 */
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 页面标题，和图片页风格统一 */
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        /* 视频容器：和图片页容器尺寸匹配，自适应不溢出 */
+        .video-container {
+            margin-bottom: 2rem;
+            max-width: 72%;
+            /* 和图片页的max-width一致 */
+            text-align: center;
+        }
+
+        /* 视频自适应：取消固定宽高，保持比例且不超出容器 */
+        .video-container video {
+            max-width: 100%;
+            height: auto;
+            /* 自动保持视频原始比例，不会变形 */
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+
+        /* 按钮组样式，和图片页完全一致 */
+        .btn-group {
+            display: flex;
+            gap: 1.5rem;
+            max-width: 400px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* 通用按钮样式，与整套页面按钮统一 */
+        .action-btn {
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            font-weight: 500;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #f8f8f8;
+            cursor: pointer;
+            min-width: 120px;
+            transition: background 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: #f0f0f0;
+            /* 悬停仅灰度变化，无彩色 */
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 页面标题，和图片页结构一致 -->
+    <h1 class="page-title">视频展示</h1>
+
+    <!-- 视频容器：自适应尺寸，和图片页展示大小匹配 -->
+    <div class="video-container">
+        <video controls>
+            <source src="./source/sample.mp4" type="video/mp4">
+            您的浏览器不支持视频播放，请升级浏览器后重试。
+        </video>
+    </div>
+
+    <!-- 功能按钮组：和图片页一致的返回首页、跳转下载页面 -->
+    <div class="btn-group">
+        <!-- 返回首页按钮（需替换为你的首页实际文件名） -->
+        <button type="button" class="action-btn" onclick="window.location.href='welcome.html'">返回首页</button>
+        <!-- 跳转下载页面按钮（需替换为你的下载页实际文件名） -->
+        <button type="button" class="action-btn" onclick="window.location.href='file.html'">文件下载</button>
+    </div>
+</body>
+
+</html>

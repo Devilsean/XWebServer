@@ -1,0 +1,36 @@
+# 构建目录
+build/
+
+# 可执行文件
+server
+
+# 日志文件
+*.log
+
+# 忽略所有ServerLog相关日志文件（支持通配符）
+*ServerLog*
+
+# 忽略valgrind调试报告
+valgrind_report.txt
+
+# 编译产物
+*.o
+*.obj
+
+# 编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 数据库相关（如果有）
+*.db
+*.sqlite
+
+# 环境变量文件
+.env

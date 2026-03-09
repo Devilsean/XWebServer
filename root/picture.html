@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebServer - 图片展示</title>
+    <style>
+        /* 基础样式重置，与整套页面保持一致 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 页面整体布局，保证内容居中且有合理间距 */
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 页面标题样式 */
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        /* 图片说明文字 */
+        .img-desc {
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            color: #333;
+            /* 深灰色，无彩色 */
+            text-align: center;
+        }
+
+        /* 图片容器，保证图片自适应且不超出屏幕 */
+        .img-container {
+            margin-bottom: 2rem;
+            max-width: 72%;
+            text-align: center;
+        }
+
+        .img-container img {
+            max-width: 100%;
+            height: auto;
+            /* 保持图片比例 */
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+
+        /* 按钮组样式，与整套页面按钮风格统一 */
+        .btn-group {
+            display: flex;
+            gap: 1.5rem;
+            max-width: 400px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* 通用按钮样式，与登录/首页按钮一致 */
+        .action-btn {
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+            font-weight: 500;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #f8f8f8;
+            cursor: pointer;
+            min-width: 120px;
+            transition: background 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: #f0f0f0;
+            /* 悬停仅灰度变化 */
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 页面标题 -->
+    <h1 class="page-title">图片展示</h1>
+
+    <!-- 图片容器 -->
+    <div class="img-container">
+        <img src="./source/bg.jpg" alt="展示图片" />
+    </div>
+
+    <!-- 功能按钮组 -->
+    <div class="btn-group">
+        <!-- 返回首页按钮 -->
+        <button type="button" class="action-btn" onclick="window.location.href='welcome.html'">返回首页</button>
+
+        <!-- 跳转下载页面按钮 -->
+        <button type="button" class="action-btn" onclick="window.location.href='file.html'">文件下载</button>
+    </div>
+</body>
+
+</html>
