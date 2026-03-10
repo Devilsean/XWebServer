@@ -1,13 +1,21 @@
 #include "lst_timer.h"
 #include "../http/http_conn.h"
+#include "lst_timer.h"
+#include <cassert> // assert
+#include <fcntl.h>
+#include <signal.h> // sigaction, sigfillset, SA_RESTART
+#include <string.h>
+#include <sys/epoll.h> // epoll_event, EPOLLIN, epoll_ctl, epoll_wait
+#include <unistd.h>    //  close
 
 sort_timer_lst::sort_timer_lst() {
-  head = NULL;
-  tail = NULL;
+  // 已经在 .h 里初始化过了，这里可以保持为空，或者显式赋值
+  head = nullptr;
+  tail = nullptr;
 }
 
 sort_timer_lst::~sort_timer_lst() {
-  util_timer *tmp = head; // 需要使用临时指针防止悬空指针
+  util_timer *tmp = head;
   while (tmp) {
     head = tmp->next;
     delete tmp;
@@ -16,9 +24,8 @@ sort_timer_lst::~sort_timer_lst() {
 }
 
 void sort_timer_lst::add_timer(util_timer *timer) {
-  if (!timer) {
+  if (!timer)
     return;
-  }
   if (!head) {
     head = tail = timer;
     return;
@@ -33,17 +40,16 @@ void sort_timer_lst::add_timer(util_timer *timer) {
 }
 
 void sort_timer_lst::adjust_timer(util_timer *timer) {
-  if (!timer) {
+  if (!timer)
     return;
-  }
   util_timer *tmp = timer->next;
-  if (!tmp || (timer->expire < tmp->expire)) { // 没有问题
+  if (!tmp || (timer->expire < tmp->expire))
     return;
-  }
+
   if (timer == head) {
     head = head->next;
-    head->prev = NULL;
-    timer->next = NULL;
+    head->prev = nullptr;
+    timer->next = nullptr;
     add_timer(timer, head);
   } else {
     timer->prev->next = timer->next;
@@ -53,24 +59,23 @@ void sort_timer_lst::adjust_timer(util_timer *timer) {
 }
 
 void sort_timer_lst::del_timer(util_timer *timer) {
-  if (!timer) {
+  if (!timer)
     return;
-  }
   if ((timer == head) && (timer == tail)) {
     delete timer;
-    head = NULL;
-    tail = NULL;
+    head = nullptr;
+    tail = nullptr;
     return;
   }
   if (timer == head) {
     head = head->next;
-    head->prev = NULL;
+    head->prev = nullptr;
     delete timer;
     return;
   }
   if (timer == tail) {
     tail = tail->prev;
-    tail->next = NULL;
+    tail->next = nullptr;
     delete timer;
     return;
   }
@@ -80,21 +85,20 @@ void sort_timer_lst::del_timer(util_timer *timer) {
 }
 
 void sort_timer_lst::tick() {
-  if (!head) {
+  if (!head)
     return;
-  }
 
-  time_t cur = time(NULL);
+  time_t cur = time(nullptr);
   util_timer *tmp = head;
   while (tmp) {
-    if (cur < tmp->expire) {
+    if (cur < tmp->expire)
       break;
-    }
+
     tmp->cb_func(tmp->user_data);
     head = tmp->next;
-    if (head) {
-      head->prev = NULL;
-    }
+    if (head)
+      head->prev = nullptr;
+
     delete tmp;
     tmp = head;
   }
@@ -117,14 +121,13 @@ void sort_timer_lst::add_timer(util_timer *timer, util_timer *lst_head) {
   if (!tmp) {
     prev->next = timer;
     timer->prev = prev;
-    timer->next = NULL;
+    timer->next = nullptr;
     tail = timer;
   }
 }
 
 void Utils::init(int timeslot) { m_TIMESLOT = timeslot; }
 
-//对文件描述符设置非阻塞
 int Utils::setnonblocking(int fd) {
   int old_option = fcntl(fd, F_GETFL);
   int new_option = old_option | O_NONBLOCK;
@@ -132,7 +135,6 @@ int Utils::setnonblocking(int fd) {
   return old_option;
 }
 
-//将内核事件表注册读事件，ET模式，选择开启EPOLLONESHOT
 void Utils::addfd(int epollfd, int fd, bool one_shot, int TRIGMode) {
   epoll_event event;
   event.data.fd = fd;
@@ -148,27 +150,24 @@ void Utils::addfd(int epollfd, int fd, bool one_shot, int TRIGMode) {
   setnonblocking(fd);
 }
 
-//信号处理函数
 void Utils::sig_handler(int sig) {
-  //为保证函数的可重入性，保留原来的errno
+  // 为保证函数的可重入性，保留原来的errno
   int save_errno = errno;
   int msg = sig;
   send(u_pipefd[1], (char *)&msg, 1, 0);
   errno = save_errno;
 }
 
-//设置信号函数
 void Utils::addsig(int sig, void(handler)(int), bool restart) {
   struct sigaction sa;
   memset(&sa, '\0', sizeof(sa));
   sa.sa_handler = handler;
   if (restart)
     sa.sa_flags |= SA_RESTART;
-  sigfillset(&sa.sa_mask); // 阻塞所有信号
-  assert(sigaction(sig, &sa, NULL) != -1);
+  sigfillset(&sa.sa_mask);
+  assert(sigaction(sig, &sa, nullptr) != -1);
 }
 
-//定时处理任务，重新定时以不断触发SIGALRM信号
 void Utils::timer_handler() {
   m_timer_lst.tick();
   alarm(m_TIMESLOT);
@@ -179,13 +178,14 @@ void Utils::show_error(int connfd, const char *info) {
   close(connfd);
 }
 
-int *Utils::u_pipefd = 0;
+// 静态变量初始化
+int *Utils::u_pipefd = nullptr;
 int Utils::u_epollfd = 0;
 
-class Utils;
-void cb_func(client_data *user_data) { // 回调函数用于定时器超时后的清理操作
-  epoll_ctl(Utils::u_epollfd, EPOLL_CTL_DEL, user_data->sockfd, 0);
+void cb_func(client_data *user_data) {
+  // 这里 user_data 的校验要在使用前
   assert(user_data);
+  epoll_ctl(Utils::u_epollfd, EPOLL_CTL_DEL, user_data->sockfd, 0);
   close(user_data->sockfd);
   http_conn::m_user_count--;
 }

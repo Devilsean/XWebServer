@@ -3,10 +3,9 @@
 
 #include "../lock/locker.h"
 #include <iostream>
-#include <pthread.h>
+#include <mutex>
 #include <stdlib.h>
 #include <sys/time.h>
-using namespace std;
 
 template <class T> class block_queue {
 public:
@@ -23,118 +22,79 @@ public:
   }
 
   void clear() {
-    m_mutex.lock();
+    std::lock_guard<std::mutex> lock(m_mutex.get()); // RAII 加锁
     m_size = 0;
     m_front = -1;
     m_back = -1;
-    m_mutex.unlock();
   }
 
   ~block_queue() {
-    m_mutex.lock();
-    if (m_array != NULL)
+    std::lock_guard<std::mutex> lock(m_mutex.get());
+    if (m_array != nullptr)
       delete[] m_array;
-
-    m_mutex.unlock();
   }
 
-  //判断队列是否满了
   bool full() {
-    m_mutex.lock();
-    if (m_size >= m_max_size) {
-
-      m_mutex.unlock();
-      return true;
-    }
-    m_mutex.unlock();
-    return false;
+    std::lock_guard<std::mutex> lock(m_mutex.get());
+    return m_size >= m_max_size;
   }
 
-  //判断队列是否为空
   bool empty() {
-    m_mutex.lock();
-    if (0 == m_size) {
-      m_mutex.unlock();
-      return true;
-    }
-    m_mutex.unlock();
-    return false;
+    std::lock_guard<std::mutex> lock(m_mutex.get());
+    return 0 == m_size;
   }
 
-  //返回队首元素
   bool front(T &value) {
-    m_mutex.lock();
+    std::lock_guard<std::mutex> lock(m_mutex.get());
     if (0 == m_size) {
-      m_mutex.unlock();
       return false;
     }
     value = m_array[m_front];
-    m_mutex.unlock();
     return true;
   }
 
-  //返回队尾元素
   bool back(T &value) {
-    m_mutex.lock();
+    std::lock_guard<std::mutex> lock(m_mutex.get());
     if (0 == m_size) {
-      m_mutex.unlock();
       return false;
     }
     value = m_array[m_back];
-    m_mutex.unlock();
     return true;
   }
 
   int size() {
-    int tmp = 0;
-
-    m_mutex.lock();
-    tmp = m_size;
-
-    m_mutex.unlock();
-    return tmp;
+    std::lock_guard<std::mutex> lock(m_mutex.get());
+    return m_size;
   }
 
   int max_size() {
-    int tmp = 0;
-
-    m_mutex.lock();
-    tmp = m_max_size;
-
-    m_mutex.unlock();
-    return tmp;
+    std::lock_guard<std::mutex> lock(m_mutex.get());
+    return m_max_size;
   }
 
-  //往队列添加元素，需要将所有使用队列的线程先唤醒
-  //当有元素push进队列,相当于生产者生产了一个元素
-  //若当前没有线程等待条件变量,则唤醒无意义
   bool push(const T &item) {
-
-    m_mutex.lock();
+    std::lock_guard<std::mutex> lock(m_mutex.get());
     if (m_size >= m_max_size) {
-
       m_cond.broadcast();
-      m_mutex.unlock();
       return false;
     }
 
     m_back = (m_back + 1) % m_max_size;
     m_array[m_back] = item;
-
     m_size++;
 
     m_cond.broadcast();
-    m_mutex.unlock();
     return true;
   }
 
-  // pop时,如果当前队列没有元素,将会等待条件变量
+  // pop 必须用 unique_lock，因为 wait 会在阻塞时自动释放锁
   bool pop(T &item) {
-
+    // 由于我们之前的 locker 类 wait 接口设计是传入 mutex 指针
+    // 这里直接调用你改好的接口
     m_mutex.lock();
+    std::unique_lock<std::mutex> lock(m_mutex.get()); // RAII 加锁
     while (m_size <= 0) {
-
-      if (!m_cond.wait(m_mutex.get())) { // 等待条件变量
+      if (!m_cond.wait(lock)) {
         m_mutex.unlock();
         return false;
       }
@@ -147,16 +107,23 @@ public:
     return true;
   }
 
-  //增加了超时处理
   bool pop(T &item, int ms_timeout) {
     struct timespec t = {0, 0};
     struct timeval now = {0, 0};
-    gettimeofday(&now, NULL);
+    gettimeofday(&now, nullptr);
+
     m_mutex.lock();
     if (m_size <= 0) {
       t.tv_sec = now.tv_sec + ms_timeout / 1000;
-      t.tv_nsec = (ms_timeout % 1000) * 1000;
-      if (!m_cond.timewait(m_mutex.get(), t)) {
+      t.tv_nsec = (now.tv_usec + (ms_timeout % 1000) * 1000) * 1000;
+
+      // 处理纳秒进位，防止 timewait 报错
+      if (t.tv_nsec >= 1000000000) {
+        t.tv_sec++;
+        t.tv_nsec -= 1000000000;
+      }
+
+      if (!m_cond.timewait(&m_mutex.get(), t)) {
         m_mutex.unlock();
         return false;
       }

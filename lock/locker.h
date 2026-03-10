@@ -1,18 +1,15 @@
 #ifndef LOCKER_H
 #define LOCKER_H
 
+#include <condition_variable>
 #include <exception>
-#include <pthread.h>
-#include <semaphore.h>
+#include <mutex>
+#include <semaphore.h> // C++11没有内置信号量，保留
 
+// 信号量类：保持原样或微调
 class sem {
 public:
-  sem() {
-    if (sem_init(&m_sem, 0, 0) != 0) {
-      throw std::exception();
-    }
-  }
-  sem(int num) {
+  sem(int num = 0) {
     if (sem_init(&m_sem, 0, num) != 0) {
       throw std::exception();
     }
@@ -24,53 +21,61 @@ public:
 private:
   sem_t m_sem;
 };
+
+// 互斥锁类：使用 std::mutex 封装
 class locker {
 public:
-  locker() {
-    if (pthread_mutex_init(&m_mutex, NULL) != 0) {
-      throw std::exception();
-    }
+  locker() = default; // 自动调用 std::mutex 的构造函数
+  ~locker() = default;
+
+  bool lock() {
+    m_mutex.lock();
+    return true;
   }
-  ~locker() { pthread_mutex_destroy(&m_mutex); }
-  bool lock() { return pthread_mutex_lock(&m_mutex) == 0; }
-  bool unlock() { return pthread_mutex_unlock(&m_mutex) == 0; }
-  pthread_mutex_t *get() { return &m_mutex; }
+  bool unlock() {
+    m_mutex.unlock();
+    return true;
+  }
+
+  // 返回原生引用，方便配合 std::unique_lock 使用
+  std::mutex &get() { return m_mutex; }
 
 private:
-  pthread_mutex_t m_mutex;
+  std::mutex m_mutex;
 };
 
+// 条件变量类：使用 std::condition_variable 封装
 class cond {
 public:
-  cond() {
-    if (pthread_cond_init(&m_cond, NULL) != 0) {
-      // pthread_mutex_destroy(&m_mutex);
-      throw std::exception();
-    }
-  }
-  ~cond() { pthread_cond_destroy(&m_cond); }
-  bool wait(pthread_mutex_t *m_mutex) {
-    int ret = 0;
-    // pthread_mutex_lock(&m_mutex);
-    ret = pthread_cond_wait(&m_cond, m_mutex);
-    // pthread_mutex_unlock(&m_mutex);
-    return ret == 0;
+  cond() = default;
+  ~cond() = default;
+
+  bool wait(std::unique_lock<std::mutex> &lock) {
+    m_cond.wait(lock);
+    return true;
   }
 
-  bool timewait(pthread_mutex_t *m_mutex,
-                struct timespec t) { // 可以设置超时时间
-    int ret = 0;
-    // pthread_mutex_lock(&m_mutex);
-    ret = pthread_cond_timedwait(&m_cond, m_mutex, &t);
-    // pthread_mutex_unlock(&m_mutex);
-    return ret == 0;
+  bool timewait(std::mutex *m_mutex, struct timespec t) {
+    std::unique_lock<std::mutex> lock(*m_mutex, std::adopt_lock);
+    // 将 timespec 转换为 C++11 的 duration
+    auto tp = std::chrono::system_clock::from_time_t(t.tv_sec) +
+              std::chrono::nanoseconds(t.tv_nsec);
+    std::cv_status status = m_cond.wait_until(lock, tp);
+    lock.release();
+    return status == std::cv_status::no_timeout;
   }
 
-  bool signal() { return pthread_cond_signal(&m_cond) == 0; }
-  bool broadcast() { return pthread_cond_broadcast(&m_cond) == 0; }
+  bool signal() {
+    m_cond.notify_one();
+    return true;
+  }
+  bool broadcast() {
+    m_cond.notify_all();
+    return true;
+  }
 
 private:
-  // static pthread_mutex_t m_mutex;
-  pthread_cond_t m_cond;
+  std::condition_variable m_cond;
 };
+
 #endif
