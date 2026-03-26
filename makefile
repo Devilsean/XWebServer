@@ -15,14 +15,37 @@ else
     CXXFLAGS += -O3 -std=c++14
 endif
 
-# 源代码列表
+# Muduo 核心源代码
+MUDUO_SRCS = ./muduo/src/Acceptor.cc \
+             ./muduo/src/Buffer.cc \
+             ./muduo/src/Channel.cc \
+             ./muduo/src/CurrentThread.cc \
+             ./muduo/src/DefaultPoller.cc \
+             ./muduo/src/EPollPoller.cc \
+             ./muduo/src/EventLoop.cc \
+             ./muduo/src/EventLoopThread.cc \
+             ./muduo/src/EventLoopThreadPool.cc \
+             ./muduo/src/InetAddress.cc \
+             ./muduo/src/Logger.cc \
+             ./muduo/src/Poller.cc \
+             ./muduo/src/Socket.cc \
+             ./muduo/src/TcpConnection.cc \
+             ./muduo/src/TcpServer.cc \
+             ./muduo/src/Thread.cc \
+             ./muduo/src/Timestamp.cc
+
+# HTTP 层源代码
+HTTP_SRCS = ./http/HttpContext.cpp \
+            ./http/HttpServer.cpp
+
+# 项目源代码
 SOURCES = main.cpp \
-          ./timer/lst_timer.cpp \
-          ./http/http_conn.cpp \
           ./log/log.cpp \
           ./CGImysql/sql_connection_pool.cpp \
-          webserver.cpp \
-          config.cpp
+          ./webserver_muduo.cpp \
+          ./config.cpp \
+          $(MUDUO_SRCS) \
+          $(HTTP_SRCS)
 
 # 目标文件
 TARGET = server

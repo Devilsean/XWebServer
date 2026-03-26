@@ -1,10 +1,12 @@
+#include "./log/log.h"
+#include "./muduo/include/EventLoop.h"
+#include "./muduo/include/InetAddress.h"
 #include "config.h"
-#include "webserver.h"
+#include "webserver_muduo.h"
 #include <string>
 
 int main(int argc, char *argv[]) {
   // 1. 数据库配置（建议后期放入 config 或环境变量）
-  // 使用 std::string 配合 C++11 特性
   std::string user = "webuser";
   std::string passwd = "Web123456!";
   std::string databasename = "tinyweb";
@@ -13,34 +15,37 @@ int main(int argc, char *argv[]) {
   Config config;
   config.parse_arg(argc, argv);
 
-  // 3. 实例化服务器
-  WebServer server;
+  // 3. 初始化日志系统（原项目文件日志）
+  if (config.close_log == 0) {
+    int split_num = (config.LOGWrite == 1) ? 800000 : 0;
+    Log::get_instance()->init("./ServerLog", config.close_log, 2000, 800000,
+                              split_num);
+    LOG_INFO("=== Muduo WebServer Starting ===");
+  }
 
-  // 4. 初始化：将所有配置参数送入 WebServer 核心
-  // 这里利用了我们在 WebServer::init 中重构后的 std::string 传参方式
-  server.init(config.PORT, user, passwd, databasename, config.LOGWrite,
-              config.OPT_LINGER, config.TRIGMode, config.sql_num,
-              config.thread_num, config.close_log, config.actor_model);
+  // 4. 创建 EventLoop（One Loop Per Thread 核心）
+  EventLoop loop;
 
-  // 5. 启动各大核心模块（按照依赖顺序）
-  // a. 开启日志系统（必须最先启动，方便后续模块报错记录）
-  server.log_write();
+  // 5. 配置监听地址
+  InetAddress listenAddr(config.PORT);
 
-  // b. 开启数据库连接池（内部会执行 initmysql_result 缓存用户信息）
-  server.sql_pool();
+  // 6. 实例化 Muduo 风格 WebServer
+  WebServerMuduo server(&loop, listenAddr, "TinyWebServer-Muduo");
 
-  // c. 开启线程池（准备处理并发请求）
-  server.thread_pool();
+  // 7. 初始化服务器配置
+  server.init(user, passwd, databasename, config.LOGWrite, config.close_log,
+              config.sql_num, config.thread_num);
 
-  // d. 配置事件触发模式（LT/ET 组合）
-  server.trig_mode();
+  // 8. 设置工作线程数（IO线程池）
+  server.setThreadNum(config.thread_num);
 
-  // e. 网络监听（创建 socket, bind, listen, epoll_create）
-  server.eventListen();
+  // 9. 启动服务器
+  LOG_INFO("Server starting on port %d", config.PORT);
+  server.start();
 
-  // 6. 进入主循环：这是程序驻留内存的地方
-  // 内部封装了 epoll_wait 和信号处理
-  server.eventLoop();
+  // 10. 启动事件循环（阻塞在此，等待连接）
+  LOG_INFO("EventLoop started");
+  loop.loop();
 
   return 0;
 }
