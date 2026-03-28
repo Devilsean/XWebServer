@@ -10,6 +10,8 @@ Log::Log() {
   m_count = 0;
   m_is_async = false;
   m_fp = nullptr;
+  m_close_log = 0;
+  m_split_lines = 1000;
 }
 
 Log::~Log() {
@@ -20,13 +22,20 @@ Log::~Log() {
 
 bool Log::init(const char *file_name, int close_log, int log_buf_size,
                int split_lines, int max_queue_size) {
+  if(close_log){
+    return false;
+  }
+  // 先初始化关键参数
+  m_close_log = close_log;
+  m_split_lines = (split_lines > 0) ? split_lines : 1000;
+  m_log_buf_size = log_buf_size;
+  m_buf = new char[m_log_buf_size];
+  memset(m_buf, '\0', m_log_buf_size);
+
   // 异步设置
   if (max_queue_size >= 1) {
     m_is_async = true;
-    // 用智能指针的 reset，不需要手动 delete 了
     m_log_queue.reset(new block_queue<string>(max_queue_size));
-
-    // C++11 开启线程，直接传静态成员函数即可，不需要传 NULL 指针了
     std::thread tid(flush_log_thread);
     tid.detach(); // 这里的效果和 pthread_detach 一样
   }
@@ -40,6 +49,12 @@ bool Log::init(const char *file_name, int close_log, int log_buf_size,
   time_t t = time(nullptr);
   struct tm *sys_tm = localtime(&t);
   struct tm my_tm = *sys_tm;
+
+  // 检查文件名为空的情况
+  if (file_name == nullptr) {
+    m_fp = nullptr;
+    return true;
+  }
 
   const char *p = strrchr(file_name, '/');
   char log_full_name[512] = {0};
@@ -60,6 +75,9 @@ bool Log::init(const char *file_name, int close_log, int log_buf_size,
 }
 
 void Log::write_log(int level, const char *format, ...) {
+  if(m_close_log||m_buf == nullptr){
+    return;
+  }
   struct timeval now = {0, 0};
   gettimeofday(&now, nullptr);
   time_t t = now.tv_sec;
@@ -92,10 +110,12 @@ void Log::write_log(int level, const char *format, ...) {
     std::lock_guard<std::mutex> lock(m_mutex.get());
     m_count++;
 
-    if (m_today != my_tm.tm_mday || m_count % m_split_lines == 0) {
+    if (m_today != my_tm.tm_mday || (m_split_lines > 0 && m_count % m_split_lines == 0)) {
       char new_log[512] = {0};
-      fflush(m_fp);
-      fclose(m_fp);
+      if( m_fp != nullptr){
+        fflush(m_fp);
+        fclose(m_fp);
+      }
       char tail[16] = {0};
       snprintf(tail, 16, "%d_%02d_%02d_", my_tm.tm_year + 1900,
                my_tm.tm_mon + 1, my_tm.tm_mday);
@@ -118,6 +138,9 @@ void Log::write_log(int level, const char *format, ...) {
 
   {
     std::lock_guard<std::mutex> lock(m_mutex.get());
+    if(m_buf == nullptr){
+      return;
+    }
     int n = snprintf(m_buf, 48, "%d-%02d-%02d %02d:%02d:%02d.%06ld %s ",
                      my_tm.tm_year + 1900, my_tm.tm_mon + 1, my_tm.tm_mday,
                      my_tm.tm_hour, my_tm.tm_min, my_tm.tm_sec, now.tv_usec, s);

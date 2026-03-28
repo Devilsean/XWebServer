@@ -64,13 +64,17 @@ void WebServerMuduo::initSqlPool() {
     connPool_ = connection_pool::GetInstance();
     connPool_->init("localhost", sqlUser_, sqlPasswd_, sqlName_, 3306, sqlNum_,
                     closeLog_);
-    Log::get_instance()->write_log(
-        1, "Database connection pool initialized successfully");
-    Log::get_instance()->flush();
+    if (closeLog_ == 0) {
+      Log::get_instance()->write_log(
+          1, "Database connection pool initialized successfully");
+      Log::get_instance()->flush();
+    }
   } catch (const std::exception &e) {
-    Log::get_instance()->write_log(
-        3, "Failed to initialize database connection pool: %s", e.what());
-    Log::get_instance()->flush();
+    if (closeLog_ == 0) {
+      Log::get_instance()->write_log(
+          3, "Failed to initialize database connection pool: %s", e.what());
+      Log::get_instance()->flush();
+    }
     // 不抛出异常，允许服务器继续运行（虽然没有数据库功能）
     connPool_ = nullptr;
   }

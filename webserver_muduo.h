@@ -5,6 +5,7 @@
 #include "./http/HttpServer.h"
 #include "./muduo/include/EventLoop.h"
 #include "./muduo/include/InetAddress.h"
+#include "muduo/include/noncopyable.h"
 #include <atomic>
 #include <condition_variable>
 #include <map>
@@ -14,15 +15,11 @@
 #include <thread>
 
 // Muduo 风格的 WebServer
-class WebServerMuduo {
+class WebServerMuduo:noncopyable {
 public:
   WebServerMuduo(EventLoop *loop, const InetAddress &listenAddr,
                  const std::string &name);
   ~WebServerMuduo();
-
-  // 禁用拷贝
-  WebServerMuduo(const WebServerMuduo &) = delete;
-  WebServerMuduo &operator=(const WebServerMuduo &) = delete;
 
   // 初始化配置
   void init(std::string user, std::string passWord, std::string databaseName,

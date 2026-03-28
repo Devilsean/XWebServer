@@ -6,14 +6,11 @@
 #include <memory>
 #include <string>
 
-class HttpRequest;
-class HttpResponse;
-
 // HTTP 响应类
 class HttpResponse {
 public:
   enum HttpStatusCode {
-    k200Ok = 200,
+    k200Ok = 200, 
     k400BadRequest = 400,
     k403Forbidden = 403,
     k404NotFound = 404,

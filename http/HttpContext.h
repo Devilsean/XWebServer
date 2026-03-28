@@ -11,7 +11,7 @@ public:
     kExpectHeaders,
     kExpectBody,
     kGotAll,
-  };
+  }; 
 
   enum Method { kInvalid, kGet, kPost, kHead, kPut, kDelete };
 
